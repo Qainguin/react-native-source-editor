@@ -85,6 +85,7 @@ public class SourceEditorImpl: UIView {
     let delegate = TextDelegate(
       onChange: { [weak self] text in
         guard let self = self, !self.applyingProps else { return }
+        self.updateGutterWidth(force: false)
         self.eventCount += 1
         self.onChange?(text, self.eventCount)
       },
@@ -123,6 +124,7 @@ public class SourceEditorImpl: UIView {
     let new = value as NSString
     if old.length == 0 {
       textView.text = value
+      updateGutterWidth(force: false)
       return true
     }
     var start = 0
@@ -154,6 +156,7 @@ public class SourceEditorImpl: UIView {
       in: NSRange(location: start, length: oldEnd - start),
       with: new.substring(with: NSRange(location: start, length: newEnd - start))
     )
+    updateGutterWidth(force: false)
     if selection.location != NSNotFound {
       let mappedStart = map(selection.location)
       let mappedEnd = map(selection.location + selection.length)
@@ -272,11 +275,38 @@ public class SourceEditorImpl: UIView {
     if let color = gutterTextColor { gutter.textColor = color }
     gutter.selectedLineTextColor = gutterCurrentLineTextColor
     if let font = gutterFont { gutter.font = font }
-    if let width = gutterMinimumWidth { gutter.minimumThickness = width }
     if let insets = gutterInsets {
       gutter.insets = STRulerInsets(leading: insets.leading, trailing: insets.trailing)
     }
+    updateGutterWidth()
+  }
+
+  private var gutterDigits = 0
+
+  /// STTextView offsets the text by the gutter's width at layout time, then
+  /// widens the gutter to fit the numbers without re-offsetting the text, so
+  /// the gutter overlaps the first column. Size it up front instead.
+  private func updateGutterWidth(force: Bool = true) {
+    guard let gutter = textView.gutterView else { return }
+    let text = (textView.text ?? "") as NSString
+    var lines = 1
+    var searchRange = NSRange(location: 0, length: text.length)
+    while true {
+      let found = text.range(of: "\n", options: [], range: searchRange)
+      if found.location == NSNotFound { break }
+      lines += 1
+      searchRange = NSRange(location: found.location + 1, length: text.length - found.location - 1)
+    }
+    let digits = max(2, String(lines).count)
+    if !force && digits == gutterDigits { return }
+    gutterDigits = digits
+    let digitWidth = ("0" as NSString).size(withAttributes: [.font: gutter.font]).width
+    let width = ceil(gutter.insets.horizontal + digitWidth * CGFloat(digits)) + 2
+    let thickness = max(gutterMinimumWidth ?? 0, width)
+    gutter.minimumThickness = thickness
+    gutter.frame.size.width = thickness
     gutter.setNeedsLayout()
+    textView.setNeedsLayout()
   }
 
   @objc public func setContentInsets(top: Double, bottom: Double, left: Double, right: Double) {
