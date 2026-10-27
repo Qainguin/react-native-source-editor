@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { processColor } from 'react-native';
 
 import SourceEditorView, { NativeSourceEditorRef } from './SourceEditorView';
 import {
@@ -41,6 +42,18 @@ const SourceEditor = React.forwardRef<SourceEditorRef, SourceEditorProps>(
 
     const text = isControlled ? value : uncontrolledText;
 
+    // React Native only converts top-level color props. Colors nested in an
+    // object reach native as raw strings, which native reads as transparent,
+    // so convert each one here.
+    const nativeColors = React.useMemo(() => {
+      if (!colors) return undefined;
+      const processed: Record<string, unknown> = {};
+      for (const [key, color] of Object.entries(colors)) {
+        if (color != null) processed[key] = processColor(color);
+      }
+      return processed as typeof colors;
+    }, [colors]);
+
     React.useImperativeHandle(
       ref,
       () => ({
@@ -70,7 +83,7 @@ const SourceEditor = React.forwardRef<SourceEditorRef, SourceEditorProps>(
         lineNumbers={lineNumbers}
         wrapLines={wrapLines}
         gutter={gutter}
-        colors={colors}
+        colors={nativeColors}
         highlights={highlights}
         contentInsets={contentInsets}
         style={style}
