@@ -34,7 +34,6 @@
     "typecheck": "tsc --noEmit",
     "clean": "del-cli lib",
     "build": "bob build",
-    "prepare": "bob build",
     "ios:plugin": "gem install cocoapods-spm",
     "ios:install": "cd example/expo-app && npm install",
     "ios:clean": "rm -rf example/expo-app/ios",
