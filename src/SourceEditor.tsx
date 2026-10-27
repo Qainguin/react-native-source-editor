@@ -17,9 +17,14 @@ const SourceEditor = React.forwardRef<SourceEditorRef, SourceEditorProps>(
       theme = 'auto',
       language = 'plaintext',
       lineNumbers = false,
+      wrapLines = false,
+      gutter,
+      colors,
+      highlights,
       contentInsets,
       onChangeText,
       onSelectionChange,
+      onFocusChange,
       style,
     },
     ref
@@ -28,6 +33,9 @@ const SourceEditor = React.forwardRef<SourceEditorRef, SourceEditorProps>(
     const [uncontrolledText, setUncontrolledText] = React.useState(
       defaultValue ?? ''
     );
+    // Latest native edit count. Sent back with `text` so native can drop a
+    // render that was computed before the user's most recent keystroke.
+    const [eventCount, setEventCount] = React.useState(0);
     const selectionRef = React.useRef<Selection>({ start: 0, end: 0 });
     const nativeRef = React.useRef<NativeSourceEditorRef>(null);
 
@@ -43,6 +51,9 @@ const SourceEditor = React.forwardRef<SourceEditorRef, SourceEditorProps>(
           nativeRef.current?.blur();
         },
         getSelection: () => selectionRef.current,
+        setSelection: ({ start, end }) => {
+          nativeRef.current?.setSelection(start, end);
+        },
       }),
       []
     );
@@ -51,15 +62,21 @@ const SourceEditor = React.forwardRef<SourceEditorRef, SourceEditorProps>(
       <SourceEditorView
         ref={nativeRef}
         text={text}
+        mostRecentEventCount={eventCount}
         editable={editable}
         font={font}
         theme={theme}
         language={language}
         lineNumbers={lineNumbers}
+        wrapLines={wrapLines}
+        gutter={gutter}
+        colors={colors}
+        highlights={highlights}
         contentInsets={contentInsets}
         style={style}
         onChangeText={(event) => {
           const next = event.nativeEvent.text;
+          setEventCount(event.nativeEvent.eventCount);
           if (!isControlled) {
             setUncontrolledText(next);
           }
@@ -71,6 +88,9 @@ const SourceEditor = React.forwardRef<SourceEditorRef, SourceEditorProps>(
             end: event.nativeEvent.end,
           };
           onSelectionChange?.(selectionRef.current);
+        }}
+        onFocusChange={(event) => {
+          onFocusChange?.(event.nativeEvent.focused);
         }}
       />
     );

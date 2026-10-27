@@ -4,6 +4,7 @@ import type { NativeSyntheticEvent } from 'react-native';
 import SourceEditorNativeView, {
   Commands,
   type ChangeTextEvent,
+  type FocusChangeEvent,
   type SelectionChangeEvent,
   type SourceEditorViewType,
 } from './SourceEditorViewNativeComponent';
@@ -12,6 +13,7 @@ import type { SourceEditorViewProps } from './SourceEditor.types';
 export type NativeSourceEditorRef = {
   focus: () => void;
   blur: () => void;
+  setSelection: (start: number, end: number) => void;
 };
 
 const SourceEditorView = React.forwardRef<NativeSourceEditorRef, SourceEditorViewProps>(
@@ -27,11 +29,15 @@ const SourceEditorView = React.forwardRef<NativeSourceEditorRef, SourceEditorVie
         blur: () => {
           if (nativeRef.current) Commands.blur(nativeRef.current);
         },
+        setSelection: (start: number, end: number) => {
+          if (nativeRef.current)
+            Commands.setSelection(nativeRef.current, start, end);
+        },
       }),
       []
     );
 
-    const { onChangeText, onSelectionChange, ...rest } = props;
+    const { onChangeText, onSelectionChange, onFocusChange, ...rest } = props;
 
     return (
       <SourceEditorNativeView
@@ -42,6 +48,9 @@ const SourceEditorView = React.forwardRef<NativeSourceEditorRef, SourceEditorVie
         }}
         onSelectionChange={(event: NativeSyntheticEvent<SelectionChangeEvent>) => {
           onSelectionChange?.(event);
+        }}
+        onFocusChange={(event: NativeSyntheticEvent<FocusChangeEvent>) => {
+          onFocusChange?.(event);
         }}
       />
     );

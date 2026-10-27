@@ -63,7 +63,20 @@ class SourceEditorViewManager :
     view.setContentInsets(value)
   }
 
+  // iOS-only props added in the sloppier fork. Android ignores them.
+  override fun setMostRecentEventCount(view: SourceEditorView, value: Int) {}
+
+  override fun setWrapLines(view: SourceEditorView, value: Boolean) {}
+
+  override fun setGutter(view: SourceEditorView, value: ReadableMap?) {}
+
+  override fun setColors(view: SourceEditorView, value: ReadableMap?) {}
+
+  override fun setHighlights(view: SourceEditorView, value: ReadableArray?) {}
+
   // --- Commands ---
+
+  override fun setSelection(view: SourceEditorView, start: Int, end: Int) {}
 
   override fun focus(view: SourceEditorView) {
     view.focusEditor()

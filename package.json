@@ -3,14 +3,14 @@
   "version": "0.1.0",
   "description": "Native source editor for React Native, wrapping STTextView on iOS/macOS and Sora-Editor on Android.",
   "source": "./src/index.ts",
-  "main": "./lib/module/index.js",
-  "module": "./lib/module/index.js",
-  "types": "./lib/typescript/src/index.d.ts",
+  "main": "./src/index.ts",
+  "module": "./src/index.ts",
+  "types": "./src/index.ts",
   "exports": {
     ".": {
       "source": "./src/index.ts",
-      "types": "./lib/typescript/src/index.d.ts",
-      "default": "./lib/module/index.js"
+      "types": "./src/index.ts",
+      "default": "./src/index.ts"
     },
     "./package.json": "./package.json",
     "./app.plugin.js": "./app.plugin.js"
@@ -92,7 +92,12 @@
     "output": "lib",
     "exclude": "**/{__tests__,__fixtures__,__mocks__}/**",
     "targets": [
-      ["module", { "esm": true }],
+      [
+        "module",
+        {
+          "esm": true
+        }
+      ],
       "typescript"
     ]
   },
@@ -130,5 +135,6 @@
       "javaPackageName": "sh.workspace.sourceeditor"
     },
     "includesGeneratedCode": false
-  }
+  },
+  "react-native": "./src/index.ts"
 }
